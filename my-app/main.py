@@ -1,7 +1,27 @@
 import flet as ft
 from flet import *
-import conexion as c
+import pyrebase
 import time
+# configuracion de firebase y apis
+config = {   
+"apiKey": "AIzaSyAuGyz4j365eCfXWWzroEI0boQEijRPKYM",
+  "authDomain": "login-a34a4.firebaseapp.com",
+  "databaseURL": "https://login-a34a4-default-rtdb.firebaseio.com",
+  "projectId": "login-a34a4",
+  "storageBucket": "login-a34a4.appspot.com",
+  "messagingSenderId": "679574054351",
+  "appId": "1:679574054351:web:440078f45043951bfc5eba",
+  "measurementId": "G-L6CW5JFWRY"
+}
+
+# Inicializa firebase
+app = pyrebase.initialize_app(config)
+
+auth = app.auth()
+
+firebase = pyrebase.initialize_app(config)
+
+db = firebase.database()
 
 
 def main(page: Page):
@@ -11,9 +31,32 @@ def main(page: Page):
     
     tbEmailR = ft.TextField(label="Correo", hint_text="Porfavor ingrese su correo")
     tbPasswordR = ft.TextField(label="Contraseña", hint_text="Porfavor ingrese su contraseña")
-            
+    def celsius(e):
+        users = db.child("/temp/-NkGzBxN3mq2OJ2TluXJ/temp").get()
+        resultado = Text(users.val())
+        print(resultado)
+        c.value = f"{resultado.value}"
+        page.update()
+        time.sleep(1)
     
-    page.title = "Routes Example"
+    def farenheit(e):
+        users = db.child("/temp/-NkCvGQtoIeXJknZDeBl/temperatura/1").get()
+        resultado = Text(users.val())
+        print(resultado)
+        f.value = f"{resultado.value}"
+        page.update()
+        time.sleep(1)
+        
+    c = ft.Text() 
+    f = ft.Text() 
+    celsiuss = ElevatedButton(text="Actualizar C°", on_click=celsius)
+    #farenheitt = ElevatedButton(text="Actualizar F°", on_click=farenheit)
+    
+
+    
+    # page.add(btn, t)
+    
+    page.title = "Sensor de temperatura"
 
     print("Initial route:", page.route)
 
@@ -62,7 +105,11 @@ def main(page: Page):
                     "/app",
                     [
                         AppBar(title=Text("Sensor de temperatura"), bgcolor=colors.SURFACE_VARIANT),
-                        Text(""),
+                        ft.Text(value="Bienvenido"),
+                        celsiuss,
+                        #farenheitt,
+                        c,
+                        f,
                     ],
                 )
             )
@@ -89,9 +136,8 @@ def main(page: Page):
     
     def login(e):
         try:
-            login = c.auth.sign_in_with_email_and_password(tbEmailL.value, tbPasswordL.value)
+            # login = auth.sign_in_with_email_and_password(tbEmailL.value, tbPasswordL.value)
             registrado = Text("Su registro fue exitoso")
-            time.sleep(5)
             page.go("/app")
         except:
             print("Invalid email or password")
@@ -100,12 +146,12 @@ def main(page: Page):
 
     def signup(e):
         try:
-            user= c.auth.create_user_with_email_and_password(tbEmailR.value, tbPasswordR.value)
+            user= auth.create_user_with_email_and_password(tbEmailR.value, tbPasswordR.value)
             page.go("/log_in")
         except:
             print("Email already exists")
             return
     page.update()
-
-
+    
+    
 ft.app(target=main)
